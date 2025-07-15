@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->string('whatsapp_number')->unique();
             $table->string('name')->nullable();
             $table->text('address')->nullable();

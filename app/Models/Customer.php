@@ -11,6 +11,7 @@ class Customer extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'whatsapp_number',
         'name',
         'address',
@@ -43,6 +44,11 @@ class Customer extends Model
     {
         return $this->hasMany(ChatSession::class, 'entity_id')
             ->where('entity_type', 'customer');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function getFormattedWhatsappNumberAttribute(): string
