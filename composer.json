@@ -12,7 +12,6 @@
         "laravel/tinker": "^2.8",
         "spatie/laravel-permission": "^6.3",
         "spatie/laravel-backup": "^8.6",
-        "barryvdh/laravel-cors": "^4.0",
         "tymon/jwt-auth": "^2.0",
         "league/geotools": "^1.1",
         "guzzlehttp/psr7": "^2.0"
