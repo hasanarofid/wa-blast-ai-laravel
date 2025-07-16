@@ -1,6 +1,9 @@
 @extends('layouts.app')
+
+@section('sidebar')
+    @include('layouts.sidebar')
+@endsection
+
 @section('content')
-<div class="container">
-    <h1>Halo Master</h1>
-</div>
+    <h1>Dashboard Konten</h1>
 @endsection
