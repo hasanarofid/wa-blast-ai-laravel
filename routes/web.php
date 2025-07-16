@@ -50,12 +50,19 @@ Route::middleware(['auth', 'role:cs'])->group(function () {
     });
 });
 
+Route::middleware(['auth', 'role:customer'])->group(function () {
+    Route::get('/customer', function () {
+        return view('customer.dashboard');
+    });
+});
+
 Route::get('/redirect-role', function () {
     $user = auth()->user();
     return match ($user->role) {
         'master' => redirect('/master'),
         'admin' => redirect('/admin'),
         'cs' => redirect('/cs'),
+        'customer' => redirect('/customer'),
         default => abort(403),
     };
 });
