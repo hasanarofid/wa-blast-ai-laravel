@@ -307,6 +307,39 @@ document.addEventListener('DOMContentLoaded', function() {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
+    // Load chat history dengan error handling
+    function loadChatHistory() {
+        const historyUrl = "{{ route('chat.history') }}";
+        
+        fetch(historyUrl)
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data.success && data.history && data.history.length > 0) {
+                    // Clear existing messages except welcome
+                    const welcomeMessage = chatMessages.querySelector('.d-flex.justify-content-start');
+                    chatMessages.innerHTML = '';
+                    if (welcomeMessage) {
+                        chatMessages.appendChild(welcomeMessage);
+                    }
+                    
+                    // Add history messages
+                    data.history.reverse().forEach(chat => {
+                        addMessage(chat.message, 'user', chat.timestamp);
+                        addMessage(chat.response, 'ai', chat.timestamp);
+                    });
+                }
+            })
+            .catch(err => {
+                console.error('Error loading chat history:', err);
+                console.log('Chat history feature not available, continuing without history...');
+            });
+    }
+
     // Event listeners
     sendButton.addEventListener('click', sendMessage);
 
@@ -339,9 +372,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     newChatBtn.addEventListener('click', function() {
         if (confirm('Apakah Anda yakin ingin memulai chat baru?')) {
-            // Redirect to a new chat page or clear current chat
-            window.location.href = "{{ route('chat.index') }}";
+            // Reload halaman untuk memulai chat baru
+            window.location.reload();
         }
     });
+
+    // Load chat history
+    loadChatHistory();
+    
+    // Focus on input when page loads
+    messageInput.focus();
 });
 </script>

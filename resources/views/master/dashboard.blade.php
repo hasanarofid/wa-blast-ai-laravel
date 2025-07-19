@@ -170,8 +170,6 @@ document.addEventListener('DOMContentLoaded', function() {
     messageInput.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-        
-        // Enable/disable send button
         sendButton.disabled = this.value.trim().length === 0;
     });
     
@@ -260,7 +258,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 ` : ''}
             </div>
         `;
-        
         chatMessages.appendChild(messageDiv);
         scrollToBottom();
     }
@@ -271,7 +268,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const typingDiv = document.createElement('div');
         typingDiv.className = 'd-flex justify-content-start mb-4 message-ai';
         typingDiv.id = 'typingIndicator';
-        
         typingDiv.innerHTML = `
             <div class="d-flex align-items-start gap-3">
                 <div class="flex-shrink-0">
@@ -292,7 +288,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
         `;
-        
         chatMessages.appendChild(typingDiv);
         scrollToBottom();
     }
@@ -309,6 +304,39 @@ document.addEventListener('DOMContentLoaded', function() {
     // Scroll to bottom
     function scrollToBottom() {
         chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // Load chat history dengan error handling
+    function loadChatHistory() {
+        const historyUrl = "{{ route('chat.history') }}";
+        
+        fetch(historyUrl)
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data.success && data.history && data.history.length > 0) {
+                    // Clear existing messages except welcome
+                    const welcomeMessage = chatMessages.querySelector('.d-flex.justify-content-start');
+                    chatMessages.innerHTML = '';
+                    if (welcomeMessage) {
+                        chatMessages.appendChild(welcomeMessage);
+                    }
+                    
+                    // Add history messages
+                    data.history.reverse().forEach(chat => {
+                        addMessage(chat.message, 'user', chat.timestamp);
+                        addMessage(chat.response, 'ai', chat.timestamp);
+                    });
+                }
+            })
+            .catch(err => {
+                console.error('Error loading chat history:', err);
+                console.log('Chat history feature not available, continuing without history...');
+            });
     }
     
     // Event listeners
@@ -344,229 +372,11 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.reload();
     });
     
-    // Load chat history dengan error handling
-    function loadChatHistory() {
-        // Cek apakah route tersedia
-        const historyUrl = "{{ route('chat.history') }}";
-        
-        fetch(historyUrl)
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
-                return res.json();
-            })
-            .then(data => {
-                if (data.success && data.history && data.history.length > 0) {
-                    // Clear existing messages except welcome
-                    const welcomeMessage = chatMessages.querySelector('.d-flex.justify-content-start');
-                    chatMessages.innerHTML = '';
-                    if (welcomeMessage) {
-                        chatMessages.appendChild(welcomeMessage);
-                    }
-                    
-                    // Add history messages
-                    data.history.reverse().forEach(chat => {
-                        addMessage(chat.message, 'user', chat.timestamp);
-                        addMessage(chat.response, 'ai', chat.timestamp);
-                    });
-                }
-            })
-            .catch(err => {
-                console.error('Error loading chat history:', err);
-                // Jika route tidak tersedia, lanjutkan tanpa history
-                console.log('Chat history feature not available, continuing without history...');
-            });
-    }
-
-    // Update event listener untuk memanggil loadChatHistory
-    document.addEventListener('DOMContentLoaded', function() {
-        const messageInput = document.getElementById('messageInput');
-        const sendButton = document.getElementById('sendMessage');
-        const chatMessages = document.getElementById('chatMessages');
-        const clearChatBtn = document.getElementById('clearChat');
-        const newChatBtn = document.getElementById('newChat');
-        
-        let isTyping = false;
-        
-        // Auto-resize textarea
-        messageInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-            sendButton.disabled = this.value.trim().length === 0;
-        });
-        
-        // Handle Enter key
-        messageInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                if (!sendButton.disabled && !isTyping) {
-                    sendMessage();
-                }
-            }
-        });
-        
-        // Send message function
-        function sendMessage() {
-            const message = messageInput.value.trim();
-            if (!message || isTyping) return;
-            
-            // Add user message
-            addMessage(message, 'user');
-            
-            // Clear input
-            messageInput.value = '';
-            messageInput.style.height = 'auto';
-            sendButton.disabled = true;
-            
-            // Show typing indicator
-            showTypingIndicator();
-            
-            // Kirim ke backend Laravel
-            fetch("{{ route('chat.send') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ message })
-            })
-            .then(res => res.json())
-            .then(data => {
-                hideTypingIndicator();
-                if (data.success) {
-                    addMessage(data.message, 'ai', data.timestamp);
-                } else {
-                    addMessage('Maaf, terjadi kesalahan: ' + (data.message || 'Tidak diketahui'), 'ai');
-                }
-            })
-            .catch(err => {
-                hideTypingIndicator();
-                addMessage('Maaf, terjadi kesalahan koneksi.', 'ai');
-            });
-        }
-        
-        // Add message to chat
-        function addMessage(text, sender, timestamp = null) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `d-flex justify-content-${sender === 'user' ? 'end' : 'start'} mb-4 message-${sender}`;
-            if (!timestamp) {
-                timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            }
-            messageDiv.innerHTML = `
-                <div class="d-flex align-items-start gap-3">
-                    ${sender === 'ai' ? `
-                        <div class="flex-shrink-0">
-                            <div class="avatar avatar-sm">
-                                <div class="avatar-initial rounded-circle bg-primary">
-                                    <i class="ti ti-robot text-white"></i>
-                                </div>
-                            </div>
-                        </div>
-                    ` : ''}
-                    <div class="flex-grow-1">
-                        <div class="bg-light rounded-3 p-3" style="max-width: 80%;">
-                            <p class="mb-0 text-dark">${text}</p>
-                        </div>
-                        <small class="text-muted mt-1 d-block">${timestamp}</small>
-                    </div>
-                    ${sender === 'user' ? `
-                        <div class="flex-shrink-0">
-                            <div class="avatar avatar-sm">
-                                <div class="avatar-initial rounded-circle bg-secondary">
-                                    <i class="ti ti-user text-white"></i>
-                                </div>
-                            </div>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-            chatMessages.appendChild(messageDiv);
-            scrollToBottom();
-        }
-        
-        // Show typing indicator
-        function showTypingIndicator() {
-            isTyping = true;
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'd-flex justify-content-start mb-4 message-ai';
-            typingDiv.id = 'typingIndicator';
-            typingDiv.innerHTML = `
-                <div class="d-flex align-items-start gap-3">
-                    <div class="flex-shrink-0">
-                        <div class="avatar avatar-sm">
-                            <div class="avatar-initial rounded-circle bg-primary">
-                                <i class="ti ti-robot text-white"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1">
-                        <div class="bg-light rounded-3 p-3" style="max-width: 80%;">
-                            <div class="typing-indicator">
-                                <div class="typing-dot"></div>
-                                <div class="typing-dot"></div>
-                                <div class="typing-dot"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            chatMessages.appendChild(typingDiv);
-            scrollToBottom();
-        }
-        
-        // Hide typing indicator
-        function hideTypingIndicator() {
-            isTyping = false;
-            const typingIndicator = document.getElementById('typingIndicator');
-            if (typingIndicator) {
-                typingIndicator.remove();
-            }
-        }
-        
-        // Scroll to bottom
-        function scrollToBottom() {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-        
-        // Event listeners
-        sendButton.addEventListener('click', sendMessage);
-        
-        clearChatBtn.addEventListener('click', function() {
-            if (confirm('Are you sure you want to clear the chat history?')) {
-                chatMessages.innerHTML = `
-                    <div class="d-flex justify-content-start mb-4">
-                        <div class="d-flex align-items-start gap-3">
-                            <div class="flex-shrink-0">
-                                <div class="avatar avatar-sm">
-                                    <div class="avatar-initial rounded-circle bg-primary">
-                                        <i class="ti ti-robot text-white"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="bg-light rounded-3 p-3" style="max-width: 80%;">
-                                    <p class="mb-0 text-dark">
-                                        Chat history cleared. How can I help you today?
-                                    </p>
-                                </div>
-                                <small class="text-muted mt-1 d-block">Just now</small>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-        });
-        
-        newChatBtn.addEventListener('click', function() {
-            window.location.reload();
-        });
-        
-        // Load chat history (dengan error handling)
-        loadChatHistory();
-        
-        // Focus on input when page loads
-        messageInput.focus();
-    });
+    // Load chat history
+    loadChatHistory();
+    
+    // Focus on input when page loads
+    messageInput.focus();
+});
 </script>
 @endsection
