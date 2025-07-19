@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ChatController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,6 +27,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // Chat API Routes
+    Route::post('/chat', [ChatController::class, 'chat'])->name('chat.send');
+    Route::get('/chat/history', [ChatController::class, 'getHistory'])->name('chat.history');
 });
 
 require __DIR__.'/auth.php';
@@ -68,3 +73,17 @@ Route::get('/redirect-role', function () {
 });
 
 // 
+
+// Untuk semua user (umum)
+Route::middleware('auth')->group(function () {
+    Route::get('/chat', function () {
+        return view('master.dashboard');
+    })->name('chat.index');
+});
+
+// Untuk customer saja
+Route::middleware(['auth', 'role:customer'])->group(function () {
+    Route::get('/chat', function () {
+        return view('customer.dashboard');
+    })->name('chat.index');
+});

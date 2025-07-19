@@ -326,7 +326,7 @@
                                                     </div>
                                                 </div>
                                             </li>
-                                            <li class="list-group-item list-group-item-action dropdown-notifications-item marked-as-read">
+                                            <li ChatControllerclass="list-group-item list-group-item-action dropdown-notifications-item marked-as-read">
                                                 <div class="d-flex">
                                                     <div class="flex-shrink-0 me-3">
                                                         <div class="avatar">
@@ -546,7 +546,7 @@
                                     <script>
                                         document.write(new Date().getFullYear());
                                     </script>
-                                    , made with ❤️ by <a href="https://pixinvent.com" target="_blank" class="fw-semibold">Pixinvent</a>
+                                    , made with ❤️ by <a href="https://solusicodekata.com" target="_blank" class="fw-semibold">Solusi Code Kita</a>
                                 </div>
                                 <div>
                                     <a href="https://themeforest.net/licenses/standard" class="footer-link me-4" target="_blank">License</a>
