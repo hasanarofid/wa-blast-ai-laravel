@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\HistoriController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -59,6 +60,13 @@ Route::middleware(['auth', 'role:customer'])->group(function () {
     Route::get('/customer', function () {
         return view('customer.dashboard');
     });
+});
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/histori', function () {
+        return view('admin.histori');
+    });
+    Route::get('/chat/history', [HistoriController::class, 'getHistory'])->name('chat.history');
 });
 
 Route::get('/redirect-role', function () {
