@@ -26,24 +26,38 @@
                 <div class="badge bg-label-primary rounded-pill ms-auto">4</div>
             </a>
             <ul class="menu-sub">
-                <li class="menu-item active">
+                <li class="menu-item {{ Request::is('master') ? 'active' : '' }}">
                     <a href="{{ url('/master') }}" class="menu-link">
                         <div data-i18n="Orders">Orders</div>
                     </a>
                 </li>
-                <li class="menu-item">
-                    <a href="dashboards-crm.html" class="menu-link">
+                <li class="menu-item {{ Request::is('customer') ? 'active' : '' }}">
+                    <a href="{{ url('/customer') }}" class="menu-link">
                         <div data-i18n="Customers">Customers</div>
                     </a>
                 </li>
-                <li class="menu-item">
-                    <a href="dashboards-ecommerce.html" class="menu-link">
+                <li class="menu-item {{ Request::is('admin') ? 'active' : '' }}">
+                    <a href="{{ url('/admin') }}" class="menu-link">
                         <div data-i18n="Partners">Partners</div>
                     </a>
                 </li>
-                <li class="menu-item">
-                    <a href="dashboards-ecommerce.html" class="menu-link">
+                <li class="menu-item {{ Request::is('cs') ? 'active' : '' }}">
+                    <a href="{{ url('/cs') }}" class="menu-link">
                         <div data-i18n="Services">Services</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li class="menu-item active open">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons ti ti-smart-home"></i>
+                <div data-i18n="Informasi">Informasi</div>
+                <div class="badge bg-label-primary rounded-pill ms-auto">4</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ Request::is('histori') ? 'active' : '' }}">
+                    <a href="{{ url('/histori') }}" class="menu-link">
+                        <div data-i18n="Histori Chat">Histori Chat</div>
                     </a>
                 </li>
             </ul>
